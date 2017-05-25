@@ -32,6 +32,11 @@ if ( ! class_exists( 'WP_Static_Menus' ) ) {
              * When any menus are updated - clear the cache.
              */
             add_action( 'wp_update_nav_menu', array( $this, 'clear_cache' ), 9 );
+
+            /**
+             * If we are caching the menu globally, we need to remove the active/current page classes.
+             */
+            add_filter( 'nav_menu_css_class', array( $this, 'clean_css_classes' ), 20 );
         }
 
         /**
@@ -173,6 +178,26 @@ if ( ! class_exists( 'WP_Static_Menus' ) ) {
                     unlink( $object );
                 }
             }
+        }
+
+        /**
+         * If we are caching a menu globally, certain classes need to be removed so menus are not showing the incorrect
+         * active/current page being viewed.
+         */
+        public function clean_css_classes( $classes ) {
+            $classes = array_unique( $classes );
+
+            $dirty_classes = apply_filters( 'wp_static_menu_global_cache_removed_classes', array( 'current-menu-item', 'current_page_item' ) );
+
+            foreach( $dirty_classes as $class ) {
+                $key = array_search( $class, $classes );
+
+                if( $key ) {
+                    unset( $classes[ $key ] );
+                }
+            }
+
+            return $classes;
         }
     }
 
