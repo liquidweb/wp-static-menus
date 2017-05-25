@@ -72,7 +72,13 @@ if ( ! class_exists( 'WP_Static_Menus' ) ) {
              */
             $file_args = apply_filters( 'wp_static_menu_file_args', (array) $args );
 
-            $path = trailingslashit( $this->get_menu_cache_dir() ) ;
+            /**
+             * Sort the args in the array so that if two arrays have identical values but just were just out of order
+             * it doesn't mean we need to store separate cached menus. This reduces the size of the cached menus dir.
+             */
+            array_multisort( $file_args );
+
+            $path = trailingslashit( $this->get_menu_cache_dir() );
 
             /**
              * $args is the same as what wp_nav_menu would be passed to generate the menu
@@ -83,7 +89,7 @@ if ( ! class_exists( 'WP_Static_Menus' ) ) {
              * If you are attempting to create a different file name for the purposes of conditional static menu cached
              * please see the wp_static_menu_file_args filter instead.
              */
-            $name = apply_filters( 'wp_static_menu_cache_file_name', md5( json_encode( array_multisort( $file_args ) ) ), $args, $file_args );
+            $name = apply_filters( 'wp_static_menu_cache_file_name', md5( json_encode( $file_args ) ), $args, $file_args );
 
             return apply_filters( 'wp_static_menus_cache_file', $path . $name . '.html', $args, $file_args );
         }
