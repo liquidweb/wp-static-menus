@@ -89,9 +89,14 @@ if ( ! class_exists( 'WP_Static_Menus' ) ) {
              * If you are attempting to create a different file name for the purposes of conditional static menu cached
              * please see the wp_static_menu_file_args filter instead.
              */
-            $name = apply_filters( 'wp_static_menu_cache_file_name', md5( json_encode( $file_args ) ), $args, $file_args );
+            $file_name = apply_filters( 'wp_static_menu_cache_file_name', md5( json_encode( $file_args ) ), $args, $file_args );
 
-            return apply_filters( 'wp_static_menus_cache_file', $path . $name . '.html', $args, $file_args );
+            /**
+             * Grab the menu name to create more human readable file names..
+             */
+            $menu_name = isset( $file_args['theme_location'] ) ? $file_args['theme_location'] . '-' : null;
+
+            return apply_filters( 'wp_static_menus_cache_file', $path . $menu_name . $file_name . '.html', $args, $file_args );
         }
 
         public function get_cached_menu( $html, $args ) {
@@ -123,11 +128,13 @@ if ( ! class_exists( 'WP_Static_Menus' ) ) {
         }
 
         public function cache_menu( $args ) {
+            $name = isset( $args->theme_location ) ? $args->theme_location : null;
+
             $cache_args = $args;
             $cache_args->echo = true;
 
             ob_start(); ?>
-<!-- WP Static Menus -- menu cached at: <?php echo current_time( 'mysql' ); ?> -->
+<!-- WP Static Menus -- <?php if( ! empty( $name ) ) echo $name . ' '; ?>menu cached at: <?php echo current_time( 'mysql' ); ?> -->
 <?php wp_nav_menu( $cache_args ); echo "\n"; ?>
 <!-- WP Static Menus -->
 <?php
